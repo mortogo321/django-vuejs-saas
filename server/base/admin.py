@@ -1,3 +1,1 @@
-from django.contrib import admin
-
-# Register your models here.
+"""Base app — landing page only; no models or admin registrations."""

@@ -1,0 +1,36 @@
+# UAT overlay — gunicorn backend + built frontend behind nginx, no mounts.
+services:
+  backend:
+    build:
+      context: ./server
+      target: runtime
+      additional_contexts:
+        infra: ./docker/backend
+      args:
+        APP_ENV: uat
+    command: null
+    volumes: []
+    user: null
+    environment:
+      - DEBUG=False
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+      additional_contexts:
+        infra: ./docker/frontend
+        nginx: ./docker/nginx
+      args:
+        APP_ENV: uat
+    command: null
+    volumes: []
+
+  nginx:
+    build:
+      context: ./docker/nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+      - frontend

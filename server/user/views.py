@@ -1,3 +1,1 @@
-from django.shortcuts import render
-
-# Create your views here.
+"""User app — Profile model only; no HTML views (API + admin)."""

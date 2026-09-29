@@ -1,0 +1,28 @@
+{
+  "name": "django-vuejs-saas-frontend",
+  "version": "0.2.0",
+  "private": true,
+  "packageManager": "bun@1.4.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "vue-tsc --noEmit",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "ci:check": "biome ci ."
+  },
+  "dependencies": {
+    "vue": "3.5.43"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@vitejs/plugin-vue": "6.0.9",
+    "typescript": "~5.9.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.2",
+    "vue-tsc": "3.3.11"
+  }
+}

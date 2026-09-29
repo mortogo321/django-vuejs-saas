@@ -1,0 +1,93 @@
+# Dev compose. Mounts source for hot-reload, runs Django runserver and the
+# Vue dev server. For staged builds use:
+#
+#     docker compose -f docker-compose.yml -f docker-compose.uat.yml up --build
+#     docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: saas
+      POSTGRES_USER: saas
+      POSTGRES_PASSWORD: saas_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saas"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server
+      target: dev
+      additional_contexts:
+        infra: ./docker/backend
+      args:
+        APP_ENV: dev
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - ./server:/app
+    user: "0:0" # bind-mount needs root to write back to host
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DJANGO_SECRET_KEY=django-insecure-dev-only
+      - POSTGRES_DB=saas
+      - POSTGRES_USER=saas
+      - POSTGRES_PASSWORD=saas_dev
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8000/api/health/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+      additional_contexts:
+        infra: ./docker/frontend
+        nginx: ./docker/nginx
+      args:
+        APP_ENV: dev
+    command: ["bun", "run", "dev", "--host", "0.0.0.0", "--port", "5173"]
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/tests:/app/tests
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

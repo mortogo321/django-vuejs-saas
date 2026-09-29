@@ -1,3 +1,1 @@
-from django.db import models
-
-# Create your models here.
+"""Base app — landing page only; no models."""
