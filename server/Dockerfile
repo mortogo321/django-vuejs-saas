@@ -8,7 +8,7 @@
 #   3. runtime — minimal image: venv + app, unprivileged user
 #   4. dev     — runtime + postgres client (compose overrides CMD)
 
-FROM python:3.13-slim-bookworm AS base
+FROM python:3.14-slim-bookworm AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
